@@ -2,6 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import path from "path";
 import { ENV } from "./lib/env";
+import cors from "cors";
+import { serve } from "inngest/express";
+import { inngest } from "./inngest/inngest";
+
 
 dotenv.config({
   path: path.resolve(process.cwd(), "backend/.env")
@@ -10,6 +14,12 @@ dotenv.config({
 const app = express();
 
 app.use(express.json());
+app.use(cors({origin:ENV.CLIENT_URL, credentials: true}));
+
+app.use("/api/inngest", serve({
+  client: inngest,
+  functions: []
+}))
 
 app.get("/", (req, res) => {
   res.send("Server running 🚀");
