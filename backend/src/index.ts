@@ -5,6 +5,7 @@ import { ENV } from "./lib/env";
 import cors from "cors";
 import { serve } from "inngest/express";
 import { inngest } from "./inngest/inngest";
+import { functions } from "./inngest/function"
 
 
 dotenv.config({
@@ -18,7 +19,7 @@ app.use(cors({origin:ENV.CLIENT_URL, credentials: true}));
 
 app.use("/api/inngest", serve({
   client: inngest,
-  functions: []
+  functions
 }))
 
 app.get("/", (req, res) => {
