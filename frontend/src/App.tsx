@@ -1,20 +1,21 @@
-import { useEffect, useState } from "react";
+import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton } from "@clerk/clerk-react"
+import "./App.css"
 
-export default function App() {
-  const [books, setBooks] = useState([]);
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/books`)
-      .then(res => res.json())
-      .then(data => setBooks(data));
-  }, []);
-
+function App() {
   return (
-    <div>
-      <h1>Books</h1>
-      {books.map((b: any) => (
-        <p key={b.id}>{b.name}</p>
-      ))}
-    </div>
-  );
+    <>
+      <h1>Welcome to the app</h1>
+      <SignedOut>
+        <SignInButton mode="modal"/>
+      </SignedOut>
+
+      <SignedIn>
+        <SignOutButton/>
+      </SignedIn>
+
+      <UserButton/>
+    </>
+  )
 }
+
+export default App
