@@ -6,9 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.functions = exports.inngest = void 0;
 const inngest_1 = require("inngest");
 const prisma_1 = __importDefault(require("./prisma"));
+const env_1 = require("./env");
 exports.inngest = new inngest_1.Inngest({
     id: "intervueX",
-    baseUrl: process.env.INNGEST_BASE_URL || 'http://localhost:8288',
+    baseUrl: env_1.ENV.INNGEST_BASE_URL || "http://localhost:8288",
 });
 const syncUser = exports.inngest.createFunction({ id: "sync-user" }, { event: "clerk/user.created" }, async ({ event }) => {
     const { id, email_addresses, first_name, last_name, image_url } = event.data;

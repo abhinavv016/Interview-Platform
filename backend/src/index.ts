@@ -15,7 +15,7 @@ app.use(cors({
 
 app.post("/webhooks/clerk", handleClerkWebhook);
 
-app.use("/api/inngest", serve({client:inngest, functions}))
+app.all("/api/inngest", serve({client:inngest, functions}))
 
 app.get("/health", (req, res) => {
   res.status(200).json({
