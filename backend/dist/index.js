@@ -8,13 +8,15 @@ const env_1 = require("./lib/env");
 const cors_1 = __importDefault(require("cors"));
 const express_2 = require("inngest/express");
 const inngest_1 = require("./lib/inngest");
+const clerk_webhook_1 = require("./lib/clerk-webhook");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({
     origin: env_1.ENV.CLIENT_URL,
     credentials: true,
 }));
-app.use("/api/inngest", (0, express_2.serve)({ client: inngest_1.inngest, functions: inngest_1.functions }));
+app.post("/webhooks/clerk", clerk_webhook_1.handleClerkWebhook);
+app.all("/api/inngest", (0, express_2.serve)({ client: inngest_1.inngest, functions: inngest_1.functions }));
 app.get("/health", (req, res) => {
     res.status(200).json({
         msg: "health endpoint is up and running",

@@ -1,9 +1,10 @@
 import { Inngest } from "inngest";
 import prisma from "./prisma";
+import { ENV } from "./env";
 
 export const inngest = new Inngest({ 
     id: "intervueX",
-    baseUrl: process.env.INNGEST_BASE_URL || 'http://localhost:8288',
+    baseUrl: ENV.INNGEST_BASE_URL || "http://localhost:8288",
  });
 
 const syncUser = inngest.createFunction(

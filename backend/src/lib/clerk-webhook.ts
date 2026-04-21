@@ -4,7 +4,7 @@ import { inngest } from './inngest';
 export async function handleClerkWebhook(req: Request, res: Response) {
   const event = req.body;
   
-  if (event.type === 'user.created') {
+  if (event.type === 'clerk/user.created') {
     await inngest.send({
       name: 'clerk/user.created',
       data: event.data,
