@@ -23,7 +23,7 @@ app.all("/api/inngest", serve({client:inngest, functions}))
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({
-    msg: "health endpoint is up and running",
+    message: "health endpoint is up and running",
   });
 });
 
