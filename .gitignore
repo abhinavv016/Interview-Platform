@@ -1,3 +1,9 @@
 node_modules
 .env
 .DS_Store
+.env
+backend/dist/
+build/
+.next/
+out/
+coverage/
