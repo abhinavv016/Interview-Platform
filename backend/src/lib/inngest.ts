@@ -1,6 +1,7 @@
 import { Inngest } from "inngest";
 import prisma from "./prisma";
 import { ENV } from "./env";
+import { deleteStreamUser, upsertStreamUser } from "./stream";
 
 export const inngest = new Inngest({ 
     id: "intervueX",
@@ -22,6 +23,12 @@ const syncUser = inngest.createFunction(
         await prisma.user.create({
             data: newUser,
         });
+
+        await upsertStreamUser({
+            id: newUser.clerkId.toString(),
+            name: newUser.name,
+            image: newUser.profileImage
+        })
     }
 )
 
@@ -30,13 +37,11 @@ const deleteUser = inngest.createFunction(
     { event: "clerk/user.deleted" },
     async ({ event }) => {
         const { id } = event.data;
-
-
         await prisma.user.delete({
-            where: {
-                clerkId: id,
-            },
+            where: { clerkId: id,},
         });
+
+        await deleteStreamUser(id.toString())
     }
 )
 

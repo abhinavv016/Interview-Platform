@@ -18,7 +18,8 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "inngest": "^3.44.3",
-    "prisma": "^7.7.0"
+    "prisma": "^7.7.0",
+    "stream-chat": "^9.41.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
