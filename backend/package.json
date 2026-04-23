@@ -16,6 +16,7 @@
     "@clerk/express": "^2.1.6",
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
+    "@stream-io/node-sdk": "^0.7.55",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "inngest": "^3.44.3",

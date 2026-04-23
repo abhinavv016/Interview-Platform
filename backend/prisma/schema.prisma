@@ -11,12 +11,44 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum Status {
+  ACTIVE
+  COMPLETED
+}
+
 model User {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
   profileImage String?
   clerkId      String   @unique
+
+  hostedSessions       Session[] @relation("HostSessions")
+  participatedSessions Session[] @relation("ParticipantSessions")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  problem      String
+  difficulty   Difficulty
+
+  hostId       String
+  host         User     @relation("HostSessions", fields: [hostId], references: [id])
+
+  participantId String?
+  participant   User?   @relation("ParticipantSessions", fields: [participantId], references: [id])
+
+  status       Status   @default(ACTIVE)
+  callId       String   @default("")
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
