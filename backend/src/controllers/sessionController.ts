@@ -201,7 +201,13 @@ export async function joinSession(req: AuthRequest, res: Response) {
             where: { id },
         });
 
-        const channel = chatClient.channel("messaging", session!.callId);
+        
+
+        if (!session) {
+            return res.status(404).json({ message: "Session not found" });
+        }
+
+        const channel = chatClient.channel("messaging", session.callId);
         await channel.addMembers([clerkId]);
 
         return res.status(200).json({ session });
@@ -242,11 +248,23 @@ export async function endSession(req: AuthRequest, res: Response) {
             where: { id },
         });
 
-        const call = streamClient.video.call("default", session!.callId);
-        await call.delete({ hard: true });
+        if (!session) {
+            return res.status(404).json({ message: "Session not found" });
+        }
 
-        const channel = chatClient.channel("messaging", session!.callId);
-        await channel.delete();
+        try {
+            const call = streamClient.video.call("default", session.callId);
+            await call.delete({ hard: true });
+        } catch (err: any) {
+            console.error("Failed to delete Stream call:", err.message);
+        }
+
+        try {
+            const channel = chatClient.channel("messaging", session.callId);
+            await channel.delete();
+        } catch (err: any) {
+            console.error("Failed to delete Stream channel:", err.message);
+        }
 
         return res.status(200).json({
             session,
