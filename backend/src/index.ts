@@ -6,6 +6,7 @@ import { functions, inngest } from "./lib/inngest";
 import { handleClerkWebhook } from "./lib/clerk-webhook";
 import { clerkMiddleware } from '@clerk/express'
 import chatRoutes from "./routes/chatRoutes";
+import sessionRoutes from "./routes/sessionRoutes";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors({
 }));
 app.use(clerkMiddleware())
 app.use("/api/chat",chatRoutes)
+app.use("/api/sessions",sessionRoutes)
 
 app.post("/webhooks/clerk", handleClerkWebhook);
 
