@@ -1,18 +1,22 @@
-import { Route, Routes } from "react-router"
+import { Navigate, Route, Routes } from "react-router"
 
 import HomePage from "./pages/HomePage"
-import ProblemPage from "./pages/ProblemPage"
 import { useUser } from "@clerk/clerk-react";
+import DashboardPage from "./pages/DashboardPage";
+import ProblemPage from "./pages/ProblemPage";
 
 function App() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
+
+  if(!isLoaded) return null;
 
   return (
     <>
 
       <Routes>
-        <Route path= "/" element={<HomePage />}/>
-        <Route path= "/problems" element={ isSignedIn ? <ProblemPage /> : <HomePage/>}/>
+        <Route path= "/" element={ !isSignedIn ? <HomePage/> : <Navigate to={"/dashboard"}/> }/>
+        <Route path= "/problems" element={ isSignedIn ? <ProblemPage /> : <Navigate to={"/"}/> }/>
+        <Route path= "/dashboard" element={ isSignedIn ? <DashboardPage /> : <Navigate to={"/"}/> }/>
       </Routes>
     </>
   )
