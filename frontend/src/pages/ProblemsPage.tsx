@@ -1,236 +1,251 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router";
 import { 
-  ChevronRight, 
-  Terminal, 
-  Zap, 
-  Brain, 
-  Flame, 
-  Search,
-  LayoutGrid,
-  X
+  ChevronRightIcon, 
+  Code2Icon, 
+  Loader2Icon, 
+  SearchIcon, 
+  Terminal,
+  Cpu
 } from "lucide-react";
-
-import { PROBLEMS } from "../data/problems";
 import Navbar from "../component/navbar";
-import type { Problem } from "../component/ProblemDescription";
+import { type Problem, GITHUB_DATA_SOURCE } from "../data/problems";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
-const ProblemsPage: React.FC = () => {
+export default function ProblemsPage() {
+  const [allProblems, setAllProblems] = useState<Problem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string>("All");
 
-  const { data: problems = [] } = useQuery({
-    queryKey: ["problems"],
-    queryFn: async () => {
-      return Object.values(PROBLEMS) as Problem[];
-    },
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const [time, setTime] = useState(new Date());
+
+useEffect(() => {
+  const timer = setInterval(() => setTime(new Date()), 1000);
+  return () => clearInterval(timer);
+}, []);
+
+  useEffect(() => {
+    const hydrateDataset = async () => {
+      try {
+        const response = await fetch(GITHUB_DATA_SOURCE);
+        const data = await response.json();
+        const rawList = data.questions || data;
+
+        const mapped: Problem[] = rawList.map((p: any) => ({
+          id: p.problem_slug,
+          title: p.title,
+          difficulty: p.difficulty,
+          category: p.topics?.join(" • ") || "General",
+          // Description removed for performance and minimalist UI
+          starterCode: {
+            javascript: p.code_snippets?.javascript || "",
+            python: p.code_snippets?.python3 || p.code_snippets?.python || "",
+            java: p.code_snippets?.java || ""
+          }
+        }));
+
+        setAllProblems(mapped);
+      } catch (error) {
+        console.error("Hydration Error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    hydrateDataset();
+  }, []);
+
+  const filteredProblems = useMemo(() => {
+    return allProblems.filter((p) => {
+      const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            p.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = activeFilter === "All" || p.difficulty === activeFilter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [searchQuery, activeFilter, allProblems]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: filteredProblems.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 90, // Smaller estimate since we removed the description
+    overscan: 10,
   });
 
-  const filteredProblems = problems.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const easyCount = problems.filter((p) => p.difficulty === "Easy").length;
-  const mediumCount = problems.filter((p) => p.difficulty === "Medium").length;
-  const hardCount = problems.filter((p) => p.difficulty === "Hard").length;
-
   return (
-    <div className="relative min-h-screen bg-[#0a0d0a] text-stone-100 selection:bg-cyan-400 selection:text-black overflow-x-hidden grain">
+    <div className="relative h-screen flex flex-col bg-[#0a0d0a] text-stone-100 selection:bg-cyan-400 selection:text-black overflow-hidden">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-[-10%] -left-32 size-130 rounded-full bg-cyan-500/5 blur-[120px]" />
+        <div className="absolute -top-40 -left-32 size-130 rounded-full bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute bottom-0 -right-40 size-105 rounded-full bg-blue-400/10 blur-[120px]" />
       </div>
 
       <Navbar />
 
-      <main className="relative max-w-6xl mx-auto px-6 py-16">
-        <div className="absolute inset-0 grid-bg opacity-30 mask-[radial-gradient(ellipse_at_top,black_40%,transparent_80%)] -z-10" />
+      {/* SYSTEM STATUS BAR - New Top Component */}
+<div className="bg-cyan-400/5 border-b border-cyan-400/10 py-2">
+  <div className="max-w-310 mx-auto px-6 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.15em]">
+    <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 text-cyan-400">
+        <span className="size-1.5 rounded-full bg-cyan-400 animate-pulse" />
+        System_Active
+      </div>
+      <div className="text-stone-500 hidden sm:block">
+        Latency: <span className="text-stone-300">24ms</span>
+      </div>
+      <div className="text-stone-500 hidden sm:block">
+        Engine: <span className="text-stone-300">v2.0.4-stable</span>
+      </div>
+    </div>
+    
+    <div className="flex items-center gap-4 text-stone-500">
+      <div className="flex items-center gap-2 border-x border-white/5 px-4">
+        <span className="text-stone-500">Local_Time:</span>
+        <span className="text-cyan-400 tabular-nums">
+          {time.toLocaleTimeString('en-US', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+          })}
+        </span>
+      </div>
+      <span className="text-cyan-400/80">Region: India</span>
+    </div>
+  </div>
+</div>
 
-        <header className="relative mb-16 reveal" style={{ animationDelay: "0.1s" }}>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-stone-500">
-              [02] / solve.module / practice.mode
-            </span>
+      {/* HEADER SECTION */}
+      <div className="relative max-w-310 w-full mx-auto px-6 pt-12 lg:pt-16 pb-8 flex-none">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-8">
+          <div className="max-w-2xl">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-stone-500 mb-4">
+              [02] / problem.vault
+            </div>
+            <h1 className="text-[44px] lg:text-[64px] leading-[0.95] tracking-[-0.03em] font-semibold">
+              Problem <span className="font-serif-display italic text-cyan-400">Library</span>.
+            </h1>
+            {/* Catchy Tagline */}
+            <p className="mt-6 text-stone-400 font-mono text-sm tracking-wide flex items-center gap-3">
+              <Cpu className="size-4 text-cyan-400" />
+              <span>&gt; execute_logic: sharpen your reflexes for the <span className="text-stone-100 font-bold">2026</span> placement cycle.</span>
+            </p>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="space-y-4">
-              <h1 className="text-[56px] lg:text-[72px] leading-[0.92] tracking-[-0.04em] font-semibold">
-                Practice. <br />
-                <span className="font-serif-display italic text-cyan-400">problems</span>
-              </h1>
-            </div>
-
-            {/* THE WORKABLE SEARCH */}
-            <div className="relative group min-w-[320px]">
-              <Search className={`absolute left-4 top-1/2 -translate-y-1/2 size-4 transition-colors ${searchQuery ? 'text-cyan-400' : 'text-stone-500'}`} />
+          {/* SEARCH & FILTERS */}
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3">
+            <div className="relative w-full sm:w-80 group">
+              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-stone-500 group-focus-within:text-cyan-400 transition-colors" />
               <input 
-                type="text" 
+                type="text"
+                placeholder="Search_vault..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Find a problem or category..." 
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-11 pr-10 text-sm font-mono focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-all placeholder:text-stone-600"
+                className="w-full bg-white/3 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm font-mono focus:outline-none focus:border-cyan-400/40"
               />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-md transition-colors"
+            </div>
+            
+            <div className="flex bg-white/3 border border-white/10 p-1 rounded-xl">
+              {["All", "Easy", "Medium", "Hard"].map((lvl) => (
+                <button
+                  key={lvl}
+                  onClick={() => setActiveFilter(lvl)}
+                  className={`px-4 py-2 rounded-lg text-[11px] font-mono uppercase tracking-widest transition-all ${
+                    activeFilter === lvl ? "bg-cyan-400 text-black font-bold" : "text-stone-500 hover:text-stone-200"
+                  }`}
                 >
-                  <X size={14} className="text-stone-400" />
+                  {lvl}
                 </button>
-              )}
+              ))}
             </div>
           </div>
-        </header>
-
-        {/* STATS STRIP */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 reveal" style={{ animationDelay: "0.2s" }}>
-          {[
-            { label: "Library", val: problems.length, icon: LayoutGrid, color: "text-cyan-400" },
-            { label: "Easy", val: easyCount, icon: Zap, color: "text-emerald-400" },
-            { label: "Medium", val: mediumCount, icon: Brain, color: "text-amber-300" },
-            { label: "Hard", val: hardCount, icon: Flame, color: "text-rose-400" },
-          ].map((s, i) => (
-            <div key={i} className="bg-white/4 border border-white/10 rounded-2xl p-5 group transition-all hover:bg-white/6">
-              <div className="flex items-center justify-between mb-2">
-                 <s.icon className={`size-4 ${s.color} opacity-60`} />
-                 <span className="font-mono text-[9px] uppercase tracking-widest text-stone-500">{s.label}</span>
-              </div>
-              <p className="text-3xl font-semibold tracking-tight">{s.val}</p>
-            </div>
-          ))}
         </div>
+      </div>
 
-        {/* PROBLEMS LIST */}
-        <div className="space-y-4 reveal" style={{ animationDelay: "0.3s" }}>
-          {filteredProblems.length > 0 ? (
-            filteredProblems.map((problem, idx) => (
-              <Link
-                key={problem.id}
-                to={`/problem/${problem.id}`}
-                className="group relative block bg-white/2 border border-white/5 hover:border-cyan-400/30 rounded-2xl transition-all duration-300"
-              >
-                <div className="relative px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-start gap-6">
-                    <div className="mt-1.5 font-mono text-[11px] text-stone-600 group-hover:text-cyan-400/60 transition-colors">
-                      {String(idx + 1).padStart(2, "0")}
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <h2 className="text-[22px] font-semibold tracking-tight group-hover:text-white transition-colors">
-                          {problem.title}
-                        </h2>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase tracking-wider border ${getDifficultyColor(problem.difficulty)}`}>
-                          {problem.difficulty}
-                        </span>
+      {/* VIRTUALIZED LIST */}
+      <div 
+        ref={parentRef} 
+        className="flex-1 overflow-y-auto overflow-x-hidden px-6 custom-scrollbar pb-10"
+      >
+        <div 
+          className="max-w-310 mx-auto relative"
+          style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+        >
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-40 gap-4">
+              <Loader2Icon className="size-10 text-cyan-400 animate-spin" />
+              <span className="font-mono text-[10px] text-stone-500 uppercase tracking-[0.2em]">Syncing_Database...</span>
+            </div>
+          ) : filteredProblems.length > 0 ? (
+            rowVirtualizer.getVirtualItems().map((virtualItem) => {
+              const problem = filteredProblems[virtualItem.index];
+              return (
+                <div
+                  key={virtualItem.key}
+                  className="absolute top-0 left-0 w-full"
+                  style={{
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                    padding: '6px 0' 
+                  }}
+                >
+                  <Link
+                    to={`/problem/${problem.id}`}
+                    className="group relative flex h-full items-center justify-between rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 hover:border-cyan-400/30 transition-all px-6 overflow-hidden"
+                  >
+                    <div className="absolute -top-20 -right-20 size-48 rounded-full bg-cyan-400/0 group-hover:bg-cyan-400/3 blur-2xl transition-all duration-700" />
+                    
+                    <div className="relative flex items-center gap-6 overflow-hidden">
+                      <div className="size-11 rounded-lg bg-cyan-400/10 border border-cyan-400/20 grid place-items-center shrink-0 group-hover:bg-cyan-400/20 transition-colors">
+                        <Code2Icon className="size-5 text-cyan-400" />
                       </div>
-                      <div className="flex items-center gap-4 text-xs font-mono text-stone-500">
-                         <span className="flex items-center gap-1.5"><Terminal size={12} className="text-cyan-400" /> {problem.category}</span>
+                      
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-4">
+                          <h2 className="text-lg font-semibold tracking-tight group-hover:text-cyan-400 transition-colors truncate">
+                            {problem.title}
+                          </h2>
+                          <span className={`font-mono text-[9px] px-2 py-0.5 rounded-full border ${getDifficultyStyle(problem.difficulty)}`}>
+                            {problem.difficulty}
+                          </span>
+                        </div>
+                        <p className="text-stone-500 text-[10px] font-mono mt-1 tracking-wider uppercase opacity-70">
+                          {problem.category}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                  <div className="size-11 rounded-full bg-white/5 border border-white/10 grid place-items-center group-hover:bg-cyan-400 transition-all duration-300">
-                    <ChevronRight className="size-5 text-stone-400 group-hover:text-black" />
-                  </div>
+
+                    <div className="relative flex items-center gap-4 shrink-0">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600 group-hover:text-cyan-400 transition-colors hidden md:inline">
+                        ↳ Open_Engine
+                      </span>
+                      <div className="size-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-cyan-400 transition-all duration-300">
+                        <ChevronRightIcon className="size-4 text-stone-500 group-hover:text-black transition-colors" />
+                      </div>
+                    </div>
+                  </Link>
                 </div>
-              </Link>
-            ))
+              );
+            })
           ) : (
-            <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl">
-              <p className="font-mono text-stone-500 text-sm">No results found for "{searchQuery}"</p>
-              <button 
-                onClick={() => setSearchQuery("")}
-                className="mt-4 text-xs font-bold text-cyan-400 hover:underline"
-              >
-                Clear all filters
-              </button>
+            <div className="text-center py-32 border border-dashed border-white/10 rounded-3xl">
+              <Terminal className="size-8 text-stone-700 mx-auto mb-4" />
+              <p className="text-stone-500 font-mono text-xs tracking-widest uppercase">Null pointer: no matches found.</p>
             </div>
           )}
         </div>
-      </main>
-      <footer className="relative border-t border-white/5 bg-[#0a0d0a] pt-20 pb-10 overflow-hidden">
-  {/* Subtle Grid background for footer */}
-  <div className="absolute inset-0 grid-bg opacity-20 mask-[linear-gradient(to_bottom,black_0%,transparent_100%)]" />
-
-  <div className="relative max-w-6xl mx-auto px-6">
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
-      {/* Brand Section */}
-      <div className="md:col-span-5 space-y-6">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="relative size-10 rounded-lg bg-cyan-400 grid place-items-center shadow-[0_0_20px_-4px_rgba(34,211,238,0.5)]">
-            <span className="font-mono font-black text-black text-lg">{"</>"}</span>
-          </div>
-          <div className="leading-none">
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-semibold tracking-tight text-white">Intervue</span>
-              <span className="text-xl font-serif-display italic text-cyan-400">X</span>
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-stone-500">placement.engine</span>
-          </div>
-        </Link>
-        <p className="text-stone-500 text-sm leading-relaxed max-w-sm">
-          The collaborative arena for modern developers. <br /> 
-          Engineered for <span className="text-stone-300">speed</span>, 
-          designed for <span className="text-stone-300">accuracy</span>.
-        </p>
-      </div>
-
-      {/* Navigation Groups */}
-      <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
-        <div className="space-y-4">
-          <h4 className="font-mono text-[11px] uppercase tracking-[0.2em] text-stone-300">Platform</h4>
-          <ul className="space-y-2 text-sm text-stone-500 font-medium">
-            <li><Link to="/problems" className="hover:text-cyan-400 transition">Practice</Link></li>
-            <li><a href="#" className="hover:text-cyan-400 transition">Mock Sessions</a></li>
-            <li><a href="#" className="hover:text-cyan-400 transition">Pair Mode</a></li>
-          </ul>
-        </div>
-        <div className="space-y-4">
-          <h4 className="font-mono text-[11px] uppercase tracking-[0.2em] text-stone-300">Resources</h4>
-          <ul className="space-y-2 text-sm text-stone-500 font-medium">
-            <li><a href="#" className="hover:text-cyan-400 transition">Docs</a></li>
-            <li><a href="#" className="hover:text-cyan-400 transition">Roadmaps</a></li>
-            <li><a href="#" className="hover:text-cyan-400 transition">Tutorials</a></li>
-          </ul>
-        </div>
-        <div className="space-y-4">
-          <h4 className="font-mono text-[11px] uppercase tracking-[0.2em] text-stone-300">System</h4>
-          <div className="flex items-center gap-2">
-            <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-mono text-emerald-500/80 uppercase tracking-tighter">API Online</span>
-          </div>
-          <div className="text-[10px] font-mono text-stone-600">v1.2.0-stable</div>
-        </div>
-      </div>
+      </div> 
+       
     </div>
 
-    {/* Bottom Bar */}
-    <div className="pt-10 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
-      <div className="flex items-center gap-6 font-mono text-[10px] uppercase tracking-widest text-stone-600">
-        <a href="#" className="hover:text-stone-300 transition">Privacy Policy</a>
-        <a href="#" className="hover:text-stone-300 transition">Terms of Service</a>
-        <a href="#" className="hover:text-stone-300 transition">Security</a>
-      </div>
-      
-      <div className="flex items-center gap-4 text-stone-600 font-mono text-[10px]">
-        <span>Made with <span className="text-rose-500/60">♥</span> by IntervueX Team</span>
-        <span className="text-stone-800">|</span>
-        <span>© 2026</span>
-      </div>
-    </div>
-  </div>
-</footer>
-    </div>
+    
   );
-};
-
-function getDifficultyColor(diff: string) {
-  switch (diff) {
-    case "Easy": return "text-emerald-400 border-emerald-400/20 bg-emerald-400/5";
-    case "Medium": return "text-amber-300 border-amber-300/20 bg-amber-300/5";
-    case "Hard": return "text-rose-400 border-rose-400/20 bg-rose-400/5";
-    default: return "text-stone-400 border-stone-400/20 bg-stone-400/5";
-  }
 }
 
-export default ProblemsPage;
+function getDifficultyStyle(difficulty: string) {
+  const d = difficulty?.toLowerCase();
+  if (d === "easy") return "border-emerald-500/30 text-emerald-400 bg-emerald-500/5";
+  if (d === "medium") return "border-amber-500/30 text-amber-400 bg-amber-500/5";
+  if (d === "hard") return "border-rose-500/30 text-rose-400 bg-rose-500/5";
+  return "border-white/10 text-stone-400";
+}
