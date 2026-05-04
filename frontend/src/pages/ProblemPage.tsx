@@ -16,6 +16,7 @@ interface ProblemData extends Problem {
   expectedOutput: Record<SupportedLanguage | string, string>;
 }
 
+
 const problemsData = PROBLEMS as Record<string, ProblemData>;
 
 const ProblemPage: React.FC = () => {
