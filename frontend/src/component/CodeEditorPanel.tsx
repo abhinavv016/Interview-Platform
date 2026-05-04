@@ -20,6 +20,7 @@ interface CodeEditorPanelProps {
   onRunCode: () => void;
 }
 
+
 const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({ selectedLanguage, code, isRunning, onLanguageChange, onCodeChange, onRunCode }) => {
   return (
     <div className="h-full flex flex-col bg-[#0d110d]">

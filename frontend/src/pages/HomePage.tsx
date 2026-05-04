@@ -354,6 +354,7 @@ export default function HomePage() {
         </div>
       </section>
 
+
       {/* FOOTER */}
       <footer className="relative border-t border-white/5 bg-[#0a0d0a] pt-20 pb-10 overflow-hidden">
   {/* Subtle Grid background for footer */}
