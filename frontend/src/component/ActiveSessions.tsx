@@ -21,13 +21,15 @@ const ActiveSessions: React.FC<ActiveSessionsProps> = ({ sessions, isLoading, is
     <div className="h-full space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-           <ZapIcon className="size-4 text-cyan-400" />
-           <h2 className="text-xl font-bold tracking-tight text-white uppercase font-mono">Pool.live</h2>
+          <ZapIcon className="size-4 text-cyan-400" />
+          <h2 className="text-xl font-bold tracking-tight text-white uppercase font-mono">Pool.live</h2>
         </div>
-        <div className="flex items-center gap-2 font-mono text-[10px] text-emerald-400">
-           <div className="size-1.5 bg-emerald-500 rounded-full animate-pulse" />
-           {sessions.length} NODES ACTIVE
-        </div>
+        {!isLoading && (
+          <div className="flex items-center gap-2 font-mono text-[10px] text-emerald-400">
+            <div className="size-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            {sessions.length} NODES ACTIVE
+          </div>
+        )}
       </div>
 
       <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
@@ -43,18 +45,18 @@ const ActiveSessions: React.FC<ActiveSessionsProps> = ({ sessions, isLoading, is
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                       <h3 className="font-bold text-white tracking-tight">{session.problem}</h3>
-                       <span className="text-[9px] font-mono border border-white/10 px-2 py-0.5 rounded text-stone-500 uppercase">{session.difficulty}</span>
+                      <h3 className="font-bold text-white tracking-tight">{session.problem}</h3>
+                      <span className="text-[9px] font-mono border border-white/10 px-2 py-0.5 rounded text-stone-500 uppercase">{session.difficulty}</span>
                     </div>
                     <div className="flex items-center gap-4 font-mono text-[10px] text-stone-500">
-                       <span className="flex items-center gap-1.5"><ShieldCheck className="size-3 text-cyan-400" strokeWidth={2.5} /> {session.host?.name}</span>
-                       <span className="flex items-center gap-1.5"><UsersIcon size={12}/> {session.participant ? "2/2" : "1/2"}</span>
+                      <span className="flex items-center gap-1.5"><ShieldCheck className="size-3 text-cyan-400" strokeWidth={2.5} /> {session.host?.name}</span>
+                      <span className="flex items-center gap-1.5"><UsersIcon size={12} /> {session.participant ? "2/2" : "1/2"}</span>
                     </div>
                   </div>
                 </div>
-                
+
                 <Link to={`/session/${session.id}`} className={`px-5 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-widest transition-all ${isUserInSession(session) ? "bg-white text-black font-bold" : "bg-white/5 text-stone-400 hover:bg-cyan-400 hover:text-black"}`}>
-                   {isUserInSession(session) ? "Restore" : "Connect"}
+                  {isUserInSession(session) ? "Restore" : "Connect"}
                 </Link>
               </div>
             </div>
