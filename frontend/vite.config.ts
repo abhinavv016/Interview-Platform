@@ -7,4 +7,9 @@ export default defineConfig({
   plugins: [react(),
     tailwindcss(),
   ],
+  server: {
+    allowedHosts: [
+      'salary-impurity-stonewall.ngrok-free.dev'
+    ]
+  }
 })
