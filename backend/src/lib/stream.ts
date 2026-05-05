@@ -26,7 +26,7 @@ export const upsertStreamUser = async(userData: any) => {
 
 export const deleteStreamUser = async(userId: any) => {
     try {
-        await chatClient.upsertUser(userId)
+        await chatClient.deleteUser(userId, { mark_messages_deleted: false })
         console.log("Stream user deleted successfully: ", userId)
     } catch (error) {
         console.error("Error in deleting the Stream user: ", error)

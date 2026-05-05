@@ -12,7 +12,7 @@ const app = express();
 
 app.use(express.json())
 app.use(cors({
-  origin: ENV.CLIENT_URL,
+  origin: ENV.CLIENT_URL || "https://salary-impurity-stonewall.ngrok-free.dev",
   credentials: true,
 }));
 app.use(clerkMiddleware())
