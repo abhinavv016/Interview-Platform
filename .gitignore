@@ -5,4 +5,4 @@ backend/dist/
 build/
 .next/
 out/
-coverage/
+coverage/backend/dist/
