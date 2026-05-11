@@ -18,10 +18,12 @@ import {
 // CSS Assets
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "stream-chat-react/dist/css/index.css";
+import { StreamChat } from "stream-chat";
+import type { Channel as StreamChannel } from 'stream-chat'
 
 interface VideoCallUIProps {
-  chatClient: any;
-  channel: any;
+  chatClient: StreamChat | null;
+  channel: StreamChannel | null;
 }
 
 function VideoCallUI({ chatClient, channel }: VideoCallUIProps) {

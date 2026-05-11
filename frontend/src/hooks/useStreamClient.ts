@@ -51,6 +51,9 @@ function useStreamClient(
 
                 // Initialize Chat
                 const apiKey = import.meta.env.VITE_STREAM_API_KEY;
+                if (!apiKey) {
+                    throw new Error("VITE_STREAM_API_KEY environment variable is not configured");
+                }
                 chatClientInstance = StreamChat.getInstance(apiKey);
 
                 await chatClientInstance.connectUser(
@@ -68,7 +71,7 @@ function useStreamClient(
                 setChannel(chatChannel);
 
             } catch (error) {
-                toast.error("Uplink failed. Retrying...");
+                toast.error("Failed to connect. Please refresh the page.");
                 console.error("[Stream.log] Uplink_Error:", error);
             } finally {
                 setIsInitializingCall(false);
@@ -79,22 +82,21 @@ function useStreamClient(
 
         // Resource Cleanup
         return () => {
-            const cleanup = async () => {
-                try {
-                    if (videoCall && videoCall.state.callingState !== 'left') {
-                        await videoCall.leave();
-                    }
-                    if (chatClientInstance) {
-                        await chatClientInstance.disconnectUser();
-                    }
-                    await disconnectStreamClient();
-                } catch (err) {
+            if (videoCall && videoCall.state.callingState !== 'left') {
+                videoCall.leave().catch(err => {
                     if (!(err instanceof Error && err.message.includes('already been left'))) {
                         console.error("[Stream.log] Cleanup_Error:", err);
                     }
-                }
-            };
-            cleanup();
+                });
+            }
+            if (chatClientInstance) {
+                chatClientInstance.disconnectUser().catch(err => {
+                    console.error("[Stream.log] ChatCleanup_Error:", err);
+                });
+            }
+            disconnectStreamClient().catch(err => {
+                console.error("[Stream.log] StreamCleanup_Error:", err);
+            });
         };
         // Dependency on session.id ensures stability for Neon Postgres records
     }, [session?.id, session?.status, loadingSession, isHost, isParticipant]);
