@@ -17,7 +17,7 @@ export const sessionApi = {
   },
 
   getMyRecentSessions: async () => {
-    const response = await axiosInstance.get("/sessions/my-recent");
+    const response = await axiosInstance.get("sessions/my-recent");
     return response.data;
   },
 

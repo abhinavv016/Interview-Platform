@@ -6,7 +6,7 @@ import { formatDistanceToNow } from "date-fns";
  * Interface defining the structure of a single session object
  */
 interface RecentSession {
-  _id: string;
+  id: string;
   problem: string;
   difficulty: string;
   status: "active" | "completed";
@@ -36,7 +36,7 @@ const RecentSessions: React.FC<RecentSessionsProps> = ({ sessions, isLoading }) 
         ) : sessions.length > 0 ? (
           sessions.map((session) => (
             <div 
-              key={session._id} 
+              key={session.id} 
               className="group relative bg-white/2 border border-white/5 rounded-2xl p-5 transition-all hover:border-white/20 hover:bg-white/4"
             >
               {/* Status Indicator */}
@@ -74,7 +74,7 @@ const RecentSessions: React.FC<RecentSessionsProps> = ({ sessions, isLoading }) 
               {/* Bottom Decorative Element */}
               <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
                 <span className="text-[9px] font-mono text-stone-700 uppercase tracking-tighter">
-                  Log_{session._id.slice(-4)}
+                  Log_{session.id?.slice(-6) || "000000"}
                 </span>
                 <span className="text-[9px] font-mono text-stone-700 uppercase">
                    {session.participant ? "Multi" : "Solo"}
