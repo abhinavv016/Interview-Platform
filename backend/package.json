@@ -15,16 +15,17 @@
   "dependencies": {
     "@clerk/express": "^2.1.6",
     "@prisma/adapter-pg": "^7.7.0",
-    "@prisma/client": "^7.7.0",
+    "@prisma/client": "^7.8.0",
     "@stream-io/node-sdk": "^0.7.55",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "inngest": "^3.44.3",
-    "prisma": "^6.19.3",
+    "prisma": "^7.8.0",
     "stream-chat": "^9.41.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.2",
     "dotenv": "^17.4.2",
