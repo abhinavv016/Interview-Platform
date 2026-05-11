@@ -13,7 +13,7 @@ export async function getStreamToken(req: AuthRequest, res: Response) {
             token,
             userId: req.user.clerkId,
             userName: req.user.name,
-            userImage: req.user.image
+            userImage: req.user.profileImage
         });
 
     } catch (error: any) {
