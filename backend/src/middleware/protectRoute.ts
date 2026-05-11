@@ -21,7 +21,8 @@ export const protectRoute = [
       const { userId: clerkId } = getAuth(req);
 
       if (!clerkId) {
-        return res.status(401).json({ message: "Unauthorized - invalid token" });
+        res.status(401).json({ message: "Unauthorized - invalid token" });
+        return;
       }
 
       const user = await prisma.user.findUnique({
@@ -29,14 +30,16 @@ export const protectRoute = [
       });
 
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        res.status(404).json({ message: "User not found" });
+        return;
       }
 
       req.user = user;
       next();
     } catch (error) {
       console.error("Error in protectRoute Middleware", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      res.status(500).json({ message: "Internal Server Error" });
+      return;
     }
   },
 ];
