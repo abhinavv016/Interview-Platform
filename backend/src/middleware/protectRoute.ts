@@ -2,8 +2,15 @@ import { clerkMiddleware, getAuth } from "@clerk/express";
 import { Request, Response, NextFunction } from "express";
 import prisma from "../lib/prisma";
 
+interface PrismaUser{
+  id: string,
+  name: string,
+  email: string,
+  profileImage: string | null,
+  clerkId: string
+}
 export interface AuthRequest extends Request {
-  user?: any;
+  user: PrismaUser
 }
 
 export const protectRoute = [
